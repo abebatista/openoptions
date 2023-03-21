@@ -43,14 +43,14 @@ const App = () => {
     {
       headerName: "Max Win Probability",
       field: "maxWinProb",
-      valueFormatter: (params) => Math.floor((params.value)) + "%",
+      valueFormatter: (params) => (params.value) + "%",
     },
     {
       headerName: "Max Loss Probability",
       field: "maxLossProb",
-      valueFormatter: (params) => Math.ceil((params.value)) + "%",
+      valueFormatter: (params) => (params.value) + "%",
     },
-    { headerName: "Expectancy", field: "expectancy" },
+    { headerName: "Expectancy", field: "expectancy", valueFormatter: (params) => (params.value) },
   ];
 
   const defaultColDef = {
