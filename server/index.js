@@ -11,6 +11,10 @@ const token = process.env.API_TOKEN;
 
 app.use(express.json());
 
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static('client/build'));
+}
+
 app.get('/strategies', async (req, res) => {
   try {
     const optionSymbols = req.query.symbols?.split(',') || [];
