@@ -6,11 +6,11 @@ import limit from 'p-limit';
 import { fileURLToPath } from 'url';
 import path from 'path';
 
+const PORT = process.env.PORT || 3000; 
 
 const app = express();
-const rootDir = path.join(__dirname, '..');
-
-const PORT = process.env.PORT || 3000; 
+// Serve static files from the client/public directory
+app.use(express.static(path.join(rootDir, 'client', 'public')));
 
 // Serve static files from the client/public directory
 app.use(express.static(path.join(rootDir, 'client', 'public')));
