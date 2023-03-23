@@ -8,7 +8,7 @@ import path from 'path';
 
 
 const app = express();
-const rootDir = path.dirname(fileURLToPath(import.meta.url));
+const rootDir = path.join(__dirname, '..');
 
 const PORT = process.env.PORT || 3000; 
 
@@ -19,6 +19,7 @@ app.use(express.static(path.join(rootDir, 'client', 'public')));
 app.get('*', (req, res) => {
   res.sendFile(path.join(rootDir, 'client', 'public', 'index.html'));
 });
+
 
 dotenv.config();
 const limitPromise = limit(120, 60);
