@@ -9,15 +9,14 @@ import path from 'path';
 const PORT = process.env.PORT || 3000; 
 
 const app = express();
-// Serve static files from the client/public directory
-app.use(express.static(path.join(rootDir, 'client', 'public')));
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Serve static files from the client/public directory
-app.use(express.static(path.join(rootDir, 'client', 'public')));
+app.use(express.static(path.join(__dirname, 'client', 'public')));
 
 // Serve the index.html file
 app.get('*', (req, res) => {
-  res.sendFile(path.join(rootDir, 'client', 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'client', 'public', 'index.html'));
 });
 
 
