@@ -9,6 +9,14 @@ dotenv.config();
 const limitPromise = limit(120, 60);
 const token = process.env.API_TOKEN;
 
+const path = require('path')
+// Serve static files from the React frontend app
+app.use(express.static(path.join(__dirname, 'client/build')))
+// Anything that doesn't match the above, send back index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname + '/client/build/index.html'))
+})
+
 app.use(express.json());
 
 if (process.env.NODE_ENV === 'production') {
@@ -49,7 +57,9 @@ app.get('/strategies', async (req, res) => {
   }
 });
 
-app.listen(3001, () => {
+const port = process.env.port || 3001
+
+app.listen(port, () => {
   console.log('Server is running on port 3001');
 });
 
