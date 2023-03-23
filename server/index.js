@@ -6,12 +6,12 @@ import limit from 'p-limit';
 import path from 'path';
 
 const app = express();
+const publicPath = path.join(new URL('.', import.meta.url).pathname, '..', 'client');
 
-const port = process.env.PORT || 3000;
-app.use(express.static(path.join(new URL('.', import.meta.url).pathname, 'client')));
+app.use(express.static(publicPath));
 
 app.get('*', (req, res) => {
-  res.sendFile(path.join(new URL('client/index.html', import.meta.url).pathname));
+  res.sendFile(path.join(publicPath, 'index.html'));
 });
 
 dotenv.config();
