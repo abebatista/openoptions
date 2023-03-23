@@ -6,6 +6,10 @@ import limit from 'p-limit';
 import { fileURLToPath } from 'url';
 import path from 'path';
 
+dotenv.config();
+const limitPromise = limit(120, 60);
+const token = process.env.API_TOKEN;
+
 const PORT = process.env.PORT || 3000; 
 
 const app = express();
@@ -22,11 +26,6 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-
-dotenv.config();
-const limitPromise = limit(120, 60);
-const token = process.env.API_TOKEN;
-
 app.use(express.json());
 
 app.get('/strategies', async (req, res) => {
@@ -34,6 +33,7 @@ app.get('/strategies', async (req, res) => {
     const optionSymbols = req.query.symbols?.split(',') || [];
     const target = parseFloat(req.query.target) || 0;
 
+    console.log('API Response:', optionSymbols, target);
     const allStrategies = [];
     for (const optionSymbol of optionSymbols) {
       const expirations = await getExpirations(optionSymbol, token);
@@ -81,6 +81,7 @@ const getExpirations = async (optionSymbol, token) => {
       );
     });
     const responseText = await response.text();
+    console.log('API Response:', responseData);
     const data = JSON.parse(responseText);
     if (!data.expirations || !data.expirations.date) {
       throw new Error('Expiration data not found');
