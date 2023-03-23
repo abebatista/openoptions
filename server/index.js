@@ -7,7 +7,7 @@ import path from 'path';
 
 const app = express();
 
-const publicPath = path.join(__dirname, '..', 'public');
+const publicPath = path.join(new URL('.', import.meta.url).pathname, '..', 'public');
 const port = process.env.PORT || 3000;
 app.use(express.static(publicPath));
 app.get('*', (req, res) => {
