@@ -12,12 +12,11 @@ const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Serve static files from the client/public directory
-app.use(express.static(path.join(__dirname, 'build', 'client')));
+app.use(express.static(path.join(__dirname, 'build')));
 
 // Serve the index.html file
-app.get('*', function (req, res) {
-  const index = path.join(__dirname, 'public', 'index.html');
-  res.sendFile(index);
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client', 'public', 'index.html'));
 });
 
 
