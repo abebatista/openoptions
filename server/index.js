@@ -3,16 +3,22 @@ import dotenv from 'dotenv';
 import fetch from 'node-fetch';
 import moment from 'moment';
 import limit from 'p-limit';
+import { fileURLToPath } from 'url';
 import path from 'path';
 
 const app = express();
 
 const PORT = process.env.PORT || 3000; 
 
-app.use(express.static(path.join(new URL('.', import.meta.url).pathname, 'client')));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
+// Serve static files from the client directory
+app.use(express.static(path.join(path.dirname(new URL(import.meta.url).pathname), 'client')));
+
+// Serve the index.html file
 app.get('*', (req, res) => {
-  res.sendFile(path.join(new URL('.', import.meta.url).pathname, 'client', 'index.html'));
+  res.sendFile(path.join(path.dirname(new URL(import.meta.url).pathname), 'client', 'index.html'));
 });
 
 dotenv.config();
