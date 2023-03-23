@@ -10,15 +10,12 @@ const app = express();
 
 const PORT = process.env.PORT || 3000; 
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Serve static files from the client directory
-app.use(express.static(path.join(path.dirname(new URL(import.meta.url).pathname), 'client')));
+// Serve static files from the client/public directory
+app.use(express.static(path.join(rootDir, 'client', 'public')));
 
 // Serve the index.html file
 app.get('*', (req, res) => {
-  res.sendFile(path.join(path.dirname(new URL(import.meta.url).pathname), 'client', 'index.html'));
+  res.sendFile(path.join(rootDir, 'client', 'public', 'index.html'));
 });
 
 dotenv.config();
