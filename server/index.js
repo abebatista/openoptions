@@ -6,7 +6,9 @@ import limit from 'p-limit';
 import { fileURLToPath } from 'url';
 import path from 'path';
 
+
 const app = express();
+const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
 const PORT = process.env.PORT || 3000; 
 
