@@ -1,50 +1,49 @@
 import express from 'express';
+import dotenv from 'dotenv';
 import fetch from 'node-fetch';
 import moment from 'moment';
 import limit from 'p-limit';
 
-const limitPromise = limit(120, 60);
-
-
 const app = express();
-const token = 'FpfmEcjHesmmeshqU5QHDpeZKASJ';
-let optionSymbol = '';
-
+dotenv.config();
+const limitPromise = limit(120, 60);
+const token = process.env.API_TOKEN;
 
 app.use(express.json());
 
 app.get('/strategies', async (req, res) => {
   try {
-    optionSymbol = req.query.symbol;
-    const expirations = await getExpirations(optionSymbol, token);
-    const validExpirations = expirations.filter(
-      (date) => moment(date).isSameOrAfter(moment(), 'day') && moment(date).isSameOrBefore(moment().add(90, 'days'))
-    );
+    const optionSymbols = req.query.symbols?.split(',') || [];
+    const target = parseFloat(req.query.target) || 0;
 
-    const underlyingPrice = await getUnderlyingPrice(optionSymbol, token);
+    const allStrategies = [];
+    for (const optionSymbol of optionSymbols) {
+      const expirations = await getExpirations(optionSymbol, token);
+      const validExpirations = expirations.filter(
+        (date) => moment(date).isSameOrAfter(moment(), 'day') && moment(date).isSameOrBefore(moment().add(90, 'days'))
+      );
+      const underlyingPrice = await getUnderlyingPrice(optionSymbol, token);
+      const strategies = [];
 
-    const strategies = [];
-    for (const expiration of validExpirations) {
-      const optionData = await getOptionData(optionSymbol, expiration, token);
-      const dte = calculateDTE(moment(expiration));
-      //iv = optionData[0].greeks.smv_vol;
-
-      const ironCondors = constructIronCondors(optionData, underlyingPrice, expiration, dte);
-      const bearCallSpreads = constructBearCallSpreads(optionData, underlyingPrice, expiration, dte);
-      const bullPutSpreads = constructBullPutSpreads(optionData, underlyingPrice, expiration, dte);
-
-      strategies.push(...ironCondors, ...bearCallSpreads, ...bullPutSpreads);
+      for (const expiration of validExpirations) {
+        const optionData = await getOptionData(optionSymbol, expiration, token);
+        const dte = calculateDTE(moment(expiration));
+        const ironCondors = constructIronCondors(optionData, optionSymbol, underlyingPrice, expiration, dte, target);
+        const shortCallSpreads = constructshortCallSpreads(optionData, optionSymbol, underlyingPrice, expiration, dte, target);
+        const shortCreditSpreads = constructshortCreditSpreads(optionData, optionSymbol, underlyingPrice, expiration, dte, target);
+        strategies.push(...ironCondors, ...shortCallSpreads, ...shortCreditSpreads);
+      }
+      const filteredStrategies = strategies.filter((strategy) => strategy.dte !== null && strategy.expectancy > 0 && strategy.bid > 0 && strategy.openInterest >= 0 && strategy.volume >= 0)
+      allStrategies.push(...filteredStrategies);
     }
 
-    const filteredStrategies = strategies.filter((strategy) => strategy.dte !== null && strategy.expectancy > 0);
-
-    res.status(200).json(filteredStrategies);
+    const sortedStrategies = allStrategies.sort((a, b) => b.expectancy - a.expectancy)
+    res.status(200).json(sortedStrategies);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'An error occurred while fetching strategies' });
   }
 });
-
 
 app.listen(3001, () => {
   console.log('Server is running on port 3001');
@@ -75,7 +74,6 @@ const getExpirations = async (optionSymbol, token) => {
   }
 };
 
-
 const getUnderlyingPrice = async (optionSymbol, token) => {
   try {
     const response = await limitPromise(() => {
@@ -97,7 +95,6 @@ const getUnderlyingPrice = async (optionSymbol, token) => {
     throw error;
   }
 };
-
 
 const getOptionData = async (optionSymbol, expiration, token) => {
   try {
@@ -128,7 +125,7 @@ const getOptionData = async (optionSymbol, expiration, token) => {
   }
 };
 
-const constructIronCondors = (options, underlyingPrice, expiration, dte) => {
+const constructIronCondors = (options, optionSymbol, underlyingPrice, expiration, dte, target) => {
   const ironCondors = [];
 
   // Separate calls and puts
@@ -183,90 +180,102 @@ const constructIronCondors = (options, underlyingPrice, expiration, dte) => {
         continue;
       }
 
-            // get strike IV
-            const shortPutIV = shortPut.greeks.smv_vol
-            const longPutIV = longPut.greeks.smv_vol
-            const shortCallIV = shortCall.greeks.smv_vol
-            const longCallIV = longCall.greeks.smv_vol
+      // get strike IV
+      const shortPutIV = shortPut.greeks.smv_vol
+      const longPutIV = longPut.greeks.smv_vol
+      const shortCallIV = shortCall.greeks.smv_vol
+      const longCallIV = longCall.greeks.smv_vol
 
       // Calculate the credit, max profit, and max loss of the Iron Condor
-      const callCredit = ((shortCall.bid + shortCall.ask)/2) - ((longCall.bid + longCall.ask)/2);
-      const putCredit = ((shortPut.bid + shortPut.ask)/2) - ((longPut.bid + longPut.ask)/2);
+      const callCredit = ((shortCall.bid + shortCall.ask) / 2) - ((longCall.bid + longCall.ask) / 2);
+      const putCredit = ((shortPut.bid + shortPut.ask) / 2) - ((longPut.bid + longPut.ask) / 2);
       const credit = (callCredit + putCredit) * 100 <= 0 ? 1 : (callCredit + putCredit) * 100;
       const maxLoss = Math.abs((Math.max(callSpreadWidth, putSpreadWidth) * 100) - credit);
 
       // Calculate probabilities and expectancy
       const maxWinProb = 100 - Math.abs((getProbs(underlyingPrice, shortPut.strike, dte, shortPutIV)[1]) - (getProbs(underlyingPrice, shortCall.strike, dte, shortCallIV)[0]));
-      const maxLossProb = 100 - Math.min(getProbs(underlyingPrice, longPut.strike, dte, longPutIV)[0],getProbs(underlyingPrice, longCall.strike, dte, longCallIV)[1]
-        );
-        const expectancy = Math.floor((credit * (maxWinProb / 100)) - (maxLoss * (maxLossProb / 100)));
-          // Add the Iron Condor to the list of strategies
-  ironCondors.push({
-    strategy: "Iron Condor",
-    optionSymbol: `${optionSymbol}`,
-    dte: dte,
-    strikes: `+${longPut.strike}P / -${shortPut.strike}P / -${shortCall.strike}C / +${longCall.strike}C`,
-    credit,
-    maxLoss,
-    maxWinProb: maxWinProb,
-    maxLossProb: maxLossProb,
-    expectancy,
-  });
-}
-}
+      const maxLossProb = 100 - Math.min(getProbs(underlyingPrice, longPut.strike, dte, longPutIV)[0], getProbs(underlyingPrice, longCall.strike, dte, longCallIV)[1]
+      );
+      const expectancy = Math.floor((credit * (maxWinProb / 100)) - (maxLoss * (maxLossProb / 100)));
+      const expectancyYield = Math.floor(((expectancy / (underlyingPrice * 100)) / dte) * (252 / 12))*100
+      const earlyProfit = Math.ceil((((target + (maxLoss * (maxLossProb / 100))) / (maxWinProb / 100)) / credit) * 100) > 100 ? 100 : Math.ceil((((target + (maxLoss * (maxLossProb / 100))) / (maxWinProb / 100)) / credit) * 100)
 
-return ironCondors;
+      // Add the Iron Condor to the list of strategies
+      ironCondors.push({
+        bid: Math.min(shortPut.bid,longPut.bid, shortCall.bid,longCall.bid),
+        openInterest: Math.min(shortPut.open_interest,longPut.open_interest,shortCall.open_interest,longCall.open_interest),
+        volume: Math.min(shortPut.volume,longPut.volume, shortCall.volume,longCall.volume),
+        strategy: "Iron Condor",
+        optionSymbol: `${optionSymbol}`,
+        dte: dte,
+        strikes: `+${longPut.strike}P / -${shortPut.strike}P / -${shortCall.strike}C / +${longCall.strike}C`,
+        expectancy: expectancy,
+        expectancyYield: expectancyYield,
+        earlyProfit: earlyProfit,
+        credit: credit,
+        maxLoss: maxLoss,
+        maxWinProb: maxWinProb,
+        maxLossProb: maxLossProb,
+      });
+    }
+  }
+
+  return ironCondors;
 };
 
+// Construct Short Call Spreads
+const constructshortCallSpreads = (options, optionSymbol, underlyingPrice, expiration, dte, target) => {
+  const shortCallSpreads = [];
 
+  const calls = options.filter((option) => option.option_type === "call");
 
-// Construct Bear Call Spreads
-const constructBearCallSpreads = (options, underlyingPrice, expiration, dte) => {
-  const bearCallSpreads = [];
+  for (let shortIndex = 0; shortIndex < calls.length; shortIndex++) {
+    const shortCall = calls[shortIndex];
 
-const calls = options.filter((option) => option.option_type === "call");
+    for (let longIndex = shortIndex + 1; longIndex < calls.length; longIndex++) {
+      const longCall = calls[longIndex];
 
-for (let shortIndex = 0; shortIndex < calls.length; shortIndex++) {
-  const shortCall = calls[shortIndex];
+      if (shortCall.strike >= longCall.strike) {
+        continue;
+      }
 
-  for (let longIndex = shortIndex + 1; longIndex < calls.length; longIndex++) {
-    const longCall = calls[longIndex];
+      const spreadWidth = longCall.strike - shortCall.strike;
+      const credit = (((shortCall.bid + shortCall.ask) / 2) - ((longCall.bid + longCall.ask) / 2)) * 100 <= 0 ? 1 : (((shortCall.bid + shortCall.ask) / 2) - ((longCall.bid + longCall.ask) / 2)) * 100;
+      const maxLoss = Math.abs((spreadWidth * 100) - credit);
 
-    if (shortCall.strike >= longCall.strike) {
-      continue;
+      // Calculate probabilities and expectancy
+      const shortCallIV = shortCall.greeks.smv_vol;
+      const longCallIV = longCall.greeks.smv_vol;
+      const maxWinProb = 100 - getProbs(underlyingPrice, shortCall.strike, dte, shortCallIV)[0];
+      const maxLossProb = 100 - getProbs(underlyingPrice, longCall.strike, dte, longCallIV)[1];
+      const expectancy = Math.floor((credit * (maxWinProb / 100)) - (maxLoss * (maxWinProb / 100)));
+      const expectancyYield = Math.ceil((((expectancy / (underlyingPrice * 100)) / dte) * (252 / 12) * 100))
+      const earlyProfit = Math.ceil((((target + (maxLoss * (maxLossProb / 100))) / (maxWinProb / 100)) / credit) * 100) > 100 ? 100 : Math.ceil((((target + (maxLoss * (maxLossProb / 100))) / (maxWinProb / 100)) / credit) * 100)
+
+      shortCallSpreads.push({
+        bid: Math.min(shortCall.bid,longCall.bid),
+        openInterest: Math.min(shortCall.open_interest,longCall.open_interest),
+        volume: Math.min(shortCall.volume,longCall.volume),
+        strategy: "Short Call Spread",
+        optionSymbol: `${optionSymbol}`,
+        dte: dte,
+        strikes: `-${shortCall.strike}C / +${longCall.strike}C`,
+        expectancy: expectancy,
+        expectancyYield: expectancyYield,
+        earlyProfit: earlyProfit,
+        credit: credit,
+        maxLoss: maxLoss,
+        maxWinProb: maxWinProb,
+        maxLossProb: maxLossProb,
+      });
     }
-
-    const spreadWidth = longCall.strike - shortCall.strike;
-    const credit = (((shortCall.bid + shortCall.ask)/2) - ((longCall.bid + longCall.ask)/2)) * 100 <= 0 ? 1 : (((shortCall.bid + shortCall.ask)/2) - ((longCall.bid + longCall.ask)/2)) * 100;
-    const maxLoss = Math.abs((spreadWidth * 100) - credit);
-
-    // Calculate probabilities and expectancy
-    const shortCallIV = shortCall.greeks.smv_vol;
-    const longCallIV = longCall.greeks.smv_vol;
-    const maxWinProb = 100 - getProbs(underlyingPrice, shortCall.strike, dte, shortCallIV)[0];
-    const maxLossProb = 100 - getProbs(underlyingPrice, longCall.strike, dte, longCallIV)[1];
-    const expectancy = Math.floor((credit * (maxWinProb / 100)) - (maxLoss * (maxWinProb / 100)));
-
-    bearCallSpreads.push({
-      strategy: "Bear Call Spread",
-      optionSymbol: `${optionSymbol}`,
-      dte: dte,
-      strikes: `-${shortCall.strike}C / +${longCall.strike}C`,
-      credit,
-      maxLoss,
-      maxWinProb: maxWinProb,
-      maxLossProb: maxLossProb,
-      expectancy,
-    });
   }
-}
-return bearCallSpreads
+  return shortCallSpreads
 }
 
-
-// Construct Bull Put Spreads
-const constructBullPutSpreads = (options, underlyingPrice, expiration, dte) => {
-  const bullPutSpreads = [];
+// Construct Short Credit Spreads
+const constructshortCreditSpreads = (options, optionSymbol, underlyingPrice, expiration, dte, target) => {
+  const shortCreditSpreads = [];
 
   // Filter puts
   const puts = options.filter((option) => option.option_type === "put");
@@ -298,25 +307,30 @@ const constructBullPutSpreads = (options, underlyingPrice, expiration, dte) => {
       const maxLossProb = getProbs(underlyingPrice, longPut.strike, dte, longPutIV)[0];
 
       const expectancy = Math.floor((credit * (maxWinProb / 100)) - (maxLoss * (maxWinProb / 100)));
+      const expectancyYield = Math.ceil((((expectancy / (underlyingPrice * 100)) / dte) * (252 / 12) * 100))
+      const earlyProfit = Math.ceil((((target + (maxLoss * (maxLossProb / 100))) / (maxWinProb / 100)) / credit) * 100) > 100 ? 100 : Math.ceil((((target + (maxLoss * (maxLossProb / 100))) / (maxWinProb / 100)) / credit) * 100)
 
-      bullPutSpreads.push({
-        strategy: "Bull Put Spread",
+      shortCreditSpreads.push({
+        bid: Math.min(shortPut.bid,longPut.bid),
+        openInterest: Math.min(shortPut.open_interest,longPut.open_interest),
+        volume: Math.min(shortPut.volume,longPut.volume),
+        strategy: "Short Credit Spread",
         optionSymbol: `${optionSymbol}`,
         dte: dte,
         strikes: `+${shortPut.strike}P / -${longPut.strike}P`,
-        credit,
-        maxLoss,
+        expectancy: expectancy,
+        expectancyYield: expectancyYield,
+        earlyProfit: earlyProfit,
+        credit: credit,
+        maxLoss: maxLoss,
         maxWinProb: maxWinProb,
         maxLossProb: maxLossProb,
-        expectancy,
       });
     }
   }
 
-  return bullPutSpreads;
+  return shortCreditSpreads;
 };
-
-
 
 const calculateDTE = (expirationDate) => {
   // Check if expirationDate is valid
@@ -332,10 +346,9 @@ const calculateDTE = (expirationDate) => {
     return null;
   }
 
-  const daysDifference = expDate.diff(currentDate, 'days')+1;
+  const daysDifference = expDate.diff(currentDate, 'days') + 1;
   return daysDifference;
 };
-
 
 const getProbs = (underlyingPrice, strike, dte, iv) => {
   let p = parseFloat(underlyingPrice);
@@ -348,10 +361,10 @@ const getProbs = (underlyingPrice, strike, dte, iv) => {
   let d1 = lnpq / vt;
 
   let y =
-      Math.floor((1 / (1 + 0.2316419 * Math.abs(d1))) * 100000) / 100000;
+    Math.floor((1 / (1 + 0.2316419 * Math.abs(d1))) * 100000) / 100000;
   let z =
-      Math.floor(0.3989423 * Math.exp(-((d1 * d1) / 2)) * 100000) /
-      100000;
+    Math.floor(0.3989423 * Math.exp(-((d1 * d1) / 2)) * 100000) /
+    100000;
   let y5 = 1.330274 * Math.pow(y, 5);
   let y4 = 1.821256 * Math.pow(y, 4);
   let y3 = 1.781478 * Math.pow(y, 3);
@@ -361,7 +374,7 @@ const getProbs = (underlyingPrice, strike, dte, iv) => {
   x = Math.floor(x * 100000) / 100000;
 
   if (d1 < 0) {
-      x = 1 - x;
+    x = 1 - x;
   }
 
   let pabove = Math.floor(Math.floor(x * 1000) / 10);
