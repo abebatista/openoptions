@@ -38,6 +38,7 @@ const App = () => {
       const response = await axios.get(`/strategies?symbols=${symbolsQueryParam}&target=${targetValue}`);
       setStrategies(response.data);
       setLoading(false);
+      console.log(response.data)
     } catch (error) {
       console.error("Error fetching data:", error);
       setLoading(false);
