@@ -12,7 +12,7 @@ const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Serve static files from the client/public directory
-app.use(express.static(path.join(__dirname, 'client', 'public')));
+app.use(express.static(path.join(__dirname, 'client', 'build')));
 
 // Serve the index.html file
 app.get('*', (req, res) => {
