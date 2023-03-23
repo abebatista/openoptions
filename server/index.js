@@ -5,23 +5,19 @@ import moment from 'moment';
 import limit from 'p-limit';
 
 const app = express();
+
+const publicPath = path.join(__dirname, '..', 'public');
+const port = process.env.PORT || 3000;
+app.use(express.static(publicPath));
+app.get('*', (req, res) => {
+   res.sendFile(path.join(publicPath, 'index.html'));
+});
+
 dotenv.config();
 const limitPromise = limit(120, 60);
 const token = process.env.API_TOKEN;
 
-const path = require('path')
-// Serve static files from the React frontend app
-app.use(express.static(path.join(__dirname, 'client/build')))
-// Anything that doesn't match the above, send back index.html
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname + '/client/build/index.html'))
-})
-
 app.use(express.json());
-
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static('client/build'));
-}
 
 app.get('/strategies', async (req, res) => {
   try {
@@ -57,10 +53,8 @@ app.get('/strategies', async (req, res) => {
   }
 });
 
-const port = process.env.port || 3001
-
 app.listen(port, () => {
-  console.log('Server is running on port 3001');
+  console.log(`Server is running on port ${port}`);
 });
 
 const getExpirations = async (optionSymbol, token) => {
