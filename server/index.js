@@ -8,9 +8,10 @@ import path from 'path';
 const app = express();
 
 const port = process.env.PORT || 3000;
-app.use(express.static(path.join(__dirname, 'client')));
+app.use(express.static(path.join(new URL('.', import.meta.url).pathname, 'client')));
+
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client', 'index.html'));
+  res.sendFile(path.join(new URL('client/index.html', import.meta.url).pathname));
 });
 
 dotenv.config();
