@@ -33,3 +33,11 @@ Button {
   color: white!important;
 }
 
+@media (max-width: 767px) {
+  .navbar {
+    flex-direction: column;
+  }
+  .ag-theme-balham-dark .ag-cell {
+    font-size: 1em;
+}
+}

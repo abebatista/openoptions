@@ -88,13 +88,27 @@ const App = () => {
   ];
 
   const onGridReady = (params) => {
-    params.api.sizeColumnsToFit(); //
+    if (window.innerWidth > 768) { // assuming that 768 is the breakpoint for mobile view
+      params.api.sizeColumnsToFit();
+    }
   };
 
   return (
     <>
       <Container fluid>
         <Navbar bg="dark" sticky="top" className="justify-content-between">
+        <Navbar.Brand>
+              <div className="d-inline-flex align-items-center">
+                <img
+                  src={process.env.PUBLIC_URL + "/OptionsAnalyzerS.png"}
+                  alt="Options Analyzer"
+                  width="35"
+                  height="35"
+                  className="d-inline-block align-top"
+                />
+                <h2 className="m-2">OPEN OPTIONS</h2>
+              </div>
+            </Navbar.Brand>
           <Form className="m-3" inline="true" onSubmit={handleSubmit}>
             <InputGroup>
               <InputGroup.Text className="bg-dark text-white">Target ($)</InputGroup.Text>
@@ -115,18 +129,6 @@ const App = () => {
               </Button>
             </InputGroup>
           </Form>
-            <Navbar.Brand>
-              <div className="d-inline-flex align-items-center">
-                <h2 className="m-2">OPEN OPTIONS</h2>
-                <img
-                  src={process.env.PUBLIC_URL + "/OptionsAnalyzerS.png"}
-                  alt="Options Analyzer"
-                  width="35"
-                  height="35"
-                  className="d-inline-block align-top"
-                />
-              </div>
-            </Navbar.Brand>
           {/*<Nav className="m-3">
           <Nav.Item>
             <Button variant="success" className="mr-2" onClick={() => window.location.href = "https://www.example.com/donate"}>Donate</Button>
