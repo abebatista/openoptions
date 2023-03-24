@@ -13,18 +13,22 @@ const token = process.env.API_TOKEN;
 const PORT = process.env.PORT || 3000; 
 
 const app = express();
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
 
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {
   // Set static folder
-  app.use(express.static('client/build'));
+  app.use(express.static(path.join(rootDir, '../client/build')));
 
   app.get('/', (request, response) => {
-    response.sendFile(path.join(__dirname, '../client/build/index.html'));
+    response.sendFile(path.join(rootDir, 'client/build/index.html'));
   });
 }
+
+app.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
+});
 
 app.use(express.json());
 
@@ -33,7 +37,6 @@ app.get('/strategies', async (req, res) => {
     const optionSymbols = req.query.symbols?.split(',') || [];
     const target = parseFloat(req.query.target) || 0;
 
-    console.log('API Response:', optionSymbols, target);
     const allStrategies = [];
     for (const optionSymbol of optionSymbols) {
       const expirations = await getExpirations(optionSymbol, token);
@@ -63,10 +66,6 @@ app.get('/strategies', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
-
 const getExpirations = async (optionSymbol, token) => {
   try {
     const response = await limitPromise(() => {
@@ -81,7 +80,6 @@ const getExpirations = async (optionSymbol, token) => {
       );
     });
     const responseText = await response.text();
-    console.log('API Response:', responseData);
     const data = JSON.parse(responseText);
     if (!data.expirations || !data.expirations.date) {
       throw new Error('Expiration data not found');
