@@ -22,9 +22,12 @@ const SelectOptions = ({ options, buttonText, onSelect }) => {
   };
 
   const handleOptionSelect = (e) => {
-    e.preventDefault();
-    const { value } = e.target;
-    handleSelectOption(value);
+    e.preventDefault()
+    const { options } = e.target;
+    const values = Array.from(options)
+      .filter(option => option.selected)
+      .map(option => option.value);
+    setSelectedOptions(values);
   };
 
   return (
@@ -45,15 +48,12 @@ const SelectOptions = ({ options, buttonText, onSelect }) => {
                 className="bg-dark text-white"
                 as="select"
                 multiple
-                onClick={handleOptionSelect}
-                onTouchStart={handleOptionSelect}
+                onChange={handleOptionSelect}
               >
                 {options.map((option) => (
                   <option
                     key={option}
                     value={option}
-                    onClick={handleOptionSelect}
-                    onTouchStart={handleOptionSelect}
                     style={{
                       backgroundColor: selectedOptions.includes(option)
                         ? "#696969"
