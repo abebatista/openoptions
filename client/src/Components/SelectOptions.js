@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Button, Modal, Form } from "react-bootstrap";
+import { Button, Modal } from "react-bootstrap";
+import Select from "react-select";
 import "../App.css";
 
 const SelectOptions = ({ options, buttonText, onSelect }) => {
@@ -14,17 +15,29 @@ const SelectOptions = ({ options, buttonText, onSelect }) => {
     setSelectedOptions([]);
   };
 
-  const handleSelectOption = (value) => {
-    const updatedSelectedOptions = selectedOptions.includes(value)
-      ? selectedOptions.filter((option) => option !== value)
-      : [...selectedOptions, value];
-    setSelectedOptions(updatedSelectedOptions);
+  const handleSelectOption = (option) => {
+    setSelectedOptions(option);
   };
 
-  const handleOptionSelect = (e) => {
-    e.preventDefault();
-    const { value } = e.target;
-    handleSelectOption(value);
+  const customStyles = {
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.isSelected ? "#696969" : null,
+      color: state.isSelected ? "#fff" : null,
+    }),
+    control: (provided) => ({
+      ...provided,
+      backgroundColor: "#343a40",
+      borderColor: "#343a40",
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: "#fff",
+    }),
+    input: (provided) => ({
+      ...provided,
+      color: "#fff",
+    }),
   };
 
   return (
@@ -39,34 +52,13 @@ const SelectOptions = ({ options, buttonText, onSelect }) => {
         </Modal.Header>
         <div className="text-start text-white bg-dark p-3">Select up to 10 symbols ...</div>
         <Modal.Body className="bg-dark">
-          <Form className="bg-dark">
-            <Form.Group className="bg-dark" controlId="options">
-              <Form.Control
-                className="bg-dark text-white"
-                as="select"
-                multiple
-                onClick={handleOptionSelect}
-                onTouchEnd={handleOptionSelect}
-              >
-                {options.map((option) => (
-                  <option
-                    key={option}
-                    value={option}
-                    onClick={handleOptionSelect}
-                    onTouchEnd={handleOptionSelect}
-                    style={{
-                      backgroundColor: selectedOptions.includes(option)
-                        ? "#696969"
-                        : null,
-                      color: selectedOptions.includes(option) ? "#fff" : null,
-                    }}
-                  >
-                    {option}
-                  </option>
-                ))}
-              </Form.Control>
-            </Form.Group>
-          </Form>
+          <Select
+            options={options.map((option) => ({ value: option, label: option }))}
+            isMulti
+            styles={customStyles}
+            value={selectedOptions}
+            onChange={handleSelectOption}
+          />
         </Modal.Body>
         <Modal.Footer className="bg-dark">
           <Button variant="secondary" onClick={handleClose}>
