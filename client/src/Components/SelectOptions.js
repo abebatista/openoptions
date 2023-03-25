@@ -10,11 +10,11 @@ const SelectOptions = ({ options, buttonText, onSelect }) => {
   const handleClose = () => setShow(false);
 const handleSave = () => {
   onSelect(selectedOptions);
-  setSelectedOptions([]); // clear the selected options
   handleClose();
+  setSelectedOptions([])
 };
 
-  const handleOptionMouseDown = (e) => {
+  const handleClick = (e) => {
     e.preventDefault();
     const { value } = e.target;
     const updatedSelectedOptions = selectedOptions.includes(value)
@@ -23,14 +23,6 @@ const handleSave = () => {
     setSelectedOptions(updatedSelectedOptions);
   };
 
-  const handleOptionTouchStart = (e) => {
-    e.preventDefault();
-    const { value } = e.target;
-    const updatedSelectedOptions = selectedOptions.includes(value)
-      ? selectedOptions.filter((option) => option !== value)
-      : [...selectedOptions, value];
-    setSelectedOptions(updatedSelectedOptions);
-  };
 
   return (
     <>
@@ -51,8 +43,7 @@ const handleSave = () => {
                   <option
                     key={option}
                     value={option}
-                    onMouseDown={handleOptionMouseDown}
-                    onTouchStart={handleOptionTouchStart}
+                    onClick={handleClick}
                     style={{
                       backgroundColor: selectedOptions.includes(option)
                         ? "#696969"
@@ -60,8 +51,6 @@ const handleSave = () => {
                       color: selectedOptions.includes(option)
                         ? "#fff"
                         : null,
-
-                        userSelect: 'none', // disable text selection
                     }}
                   >
                     {option}
