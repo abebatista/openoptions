@@ -188,6 +188,7 @@ const App = () => {
             </div>
           </Modal.Body>
           <Modal.Footer className="bg-dark text-white">
+          <div className="text-justify">The information provided by Open Options is for educational and informational purposes only and should not be considered as investment, financial, or legal advice. Open Options does not provide personalized investment advice or recommendations regarding the suitability of any investment or investment strategy. Past performance is not indicative of future results. Investment involves risk, including the possible loss of principal. Users of Open Options are solely responsible for their own investment decisions and should seek the advice of a professional advisor before making any investment decisions.</div>
             <div className="mt-5 text-white text-center" style={{ display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
               <span>Powered by</span>
               <a href='https://tradier.com'>

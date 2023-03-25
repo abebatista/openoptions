@@ -46,6 +46,7 @@ const SelectOptions = ({ options, buttonText, onSelect }) => {
                 as="select"
                 multiple
                 onClick={handleOptionSelect}
+                onTouchEnd={handleOptionSelect}
               >
                 {options.map((option) => (
                   <option
