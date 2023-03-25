@@ -52,7 +52,7 @@ const SelectOptions = ({ options, buttonText, onSelect }) => {
                     key={option}
                     value={option}
                     onClick={handleOptionSelect}
-                    onTouchStart={handleOptionSelect}
+                    onTouchEnd={handleOptionSelect}
                     style={{
                       backgroundColor: selectedOptions.includes(option)
                         ? "#696969"
