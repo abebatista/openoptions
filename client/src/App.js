@@ -12,7 +12,7 @@ const App = () => {
   const [loading, setLoading] = useState(false)
   const [targetValue, setTargetValue] = useState(50)
   const [selectedSymbols, setselectedSymbols] = useState([])
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 800)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1500)
   const [defaultColWidth, setDefaultColWidth] = useState(undefined)
   const [gridHeight, setGridHeight] = useState('84vh')
 
