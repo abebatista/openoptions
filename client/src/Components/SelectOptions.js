@@ -42,11 +42,6 @@ const SelectOptions = ({ options, buttonText, onSelect }) => {
     }
   };
 
-  const handleChange = (event) => {
-    const updatedSelectedOptions = Array.from(event.target.selectedOptions, (option) => option.value);
-    setSelectedOptions(updatedSelectedOptions);
-  };
-
   return (
     <>
       <Button variant="outline-secondary" onClick={handleShow}>
@@ -61,13 +56,7 @@ const SelectOptions = ({ options, buttonText, onSelect }) => {
         <Modal.Body className="bg-dark">
           <Form className="bg-dark">
             <Form.Group className="bg-dark" controlId="options">
-              <Form.Control
-                className="bg-dark text-white"
-                as="select"
-                multiple
-                value={selectedOptions}
-                onChange={handleChange}
-              >
+              <Form.Control className="bg-dark text-white" as="select" multiple>
                 {options.map((option) => (
                   <option
                     key={option}
@@ -103,6 +92,5 @@ const SelectOptions = ({ options, buttonText, onSelect }) => {
     </>
   );
 };
-
 
 export default SelectOptions;
