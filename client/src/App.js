@@ -83,6 +83,7 @@ const App = () => {
     {
       headerName: "Position",
       pinned: "left",
+      width: 110,
       autoHeight: true,
       cellRenderer: (params) => {
         const { data } = params
