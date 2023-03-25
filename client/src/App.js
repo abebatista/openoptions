@@ -1,21 +1,22 @@
-import React, { useState, useEffect } from "react";
-import { AgGridReact } from "ag-grid-react";
+import React, { useState, useEffect } from "react"
+import { AgGridReact } from "ag-grid-react"
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-balham.css'
-import axios from "axios";
-import { Container, Modal, Spinner, Navbar, Form, Button, InputGroup } from "react-bootstrap";
-import SelectOptions from "./Components/SelectOptions";
-import './App.css';
+import axios from "axios"
+import { Container, Modal, Spinner, Navbar, Form, Button, InputGroup } from "react-bootstrap"
+import SelectOptions from "./Components/SelectOptions"
+import './App.css'
 
 const App = () => {
-  const [strategies, setStrategies] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [targetValue, setTargetValue] = useState(50);
-  const [selectedSymbols, setselectedSymbols] = useState([]);
-  const [isMobile, setIsMobile] = useState(/Mobi|Android/i.test(navigator.userAgent));
-  const [gridHeight, setGridHeight] = useState("80vh");
+  const [strategies, setStrategies] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [targetValue, setTargetValue] = useState(50)
+  const [selectedSymbols, setselectedSymbols] = useState([])
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 800)
+  const [defaultColWidth, setDefaultColWidth] = useState(undefined)
+  const [gridHeight, setGridHeight] = useState('84vh')
 
- const symbols = ["AAP", "AAPL", "ABBV", "ABT", "ACN", "ADBE", "ADI", "ADM", "ADP", "ADSK", "AEP", "AES", "AFL", "AGNC", "AIG", "AKAM", "ALK", "ALL", "AMAT", "AMD", "AMGN", "AMRN", "AMZN", "ANTM", "APA", "APH", "APTV", "ATVI", "AVGO", "AXP", "BABA", "BAC", "BAX", "BBY", "BEN", "BIDU", "BIIB", "BK", "BKR", "BMY", "BP", "BSX", "BX", "BYND", "C", "CAH", "CAT", "CB", "CCI", "CCL", "CF", "CFG", "CHWY", "CI", "CL", "CLF", "CLX", "CMCSA", "CME", "CNC", "CNP", "COF", "COP", "COST", "CPB", "CPRI", "CRM", "CRON", "CRWD", "CSCO", "CSX", "CTVA", "CVS", "CVX", "CZR", "D", "DAL", "DD", "DE", "DHI", "DHR", "DIS", "DISCA", "DISCK", "DISH", "DKNG", "DLR", "DOCU", "DOW", "DRI", "DVN", "DXC", "EA", "EBAY", "ED", "EIX", "EMR", "EOG", "EQR", "EVRG", "EW", "EXC", "EXPE", "F", "FANG", "FAST", "FCX", "FDX", "FE", "FISV", "FITB", "FOXA", "FSLR", "FTI", "FTV", "GD", "GE", "GILD", "GLW", "GM", "GOLD", "GOOG", "GOOGL", "GPRO", "GPS", "GS", "HAL", "HBAN", "HBI", "HCA", "HD", "HFC", "HIG", "HLT", "HOG", "HOLX", "HON", "HPE", "HPQ", "IBM", "ICE", "INTC", "IP", "IPG", "IRM", "IVZ", "JCI", "JD", "JNJ", "JNPR", "JPM", "K", "KHC", "KMI", "KO", "KR", "KSS", "LEN", "LKQ", "LLY", "LNC", "LOW", "LUMN", "LUV", "LVS", "LYB", "LYFT", "MA", "MAR", "MARA", "MAS", "MCD", "MCHP", "MDLZ", "MDT", "MET", "META", "MGM", "MMM", "MO", "MOS", "MPC", "MRK", "MRNA", "MRO", "MRVL", "MS", "MSFT", "MTB", "MU", "NCLH", "NEE", "NEM", "NET", "NFLX", "NKE", "NLOK", "NOW", "NRG", "NTAP", "NTES", "NVAX", "NVDA", "NWL", "NWSA", "O", "OKE", "OMC", "ORCL", "OXY", "PBCT", "PBR", "PEAK", "PEP", "PFE", "PFG", "PG", "PGR", "PNC", "PPL", "PRU", "PSX", "PXD", "PYPL", "QCOM", "RCL", "RF", "RIG", "ROKU", "ROST", "RTX", "SBUX", "SCHW", "SHOP", "SIRI", "SLB", "SO", "SPG", "SQ", "STX", "SWKS", "SYF", "SYY", "T", "TAP", "TCOM", "TGT", "TJX", "TMO", "TMUS", "TPR", "TRIP", "TRV", "TSLA", "TSM", "TSN", "TT", "TTD", "TTWO", "TXN", "UA", "UAL", "UBER", "ULTA", "UNH", "UNM", "UNP", "UPS", "URBN", "USB", "V", "VFC", "VTR", "VZ", "WAB", "WBA", "WDC", "WFC", "WM", "WMB", "WMT", "WRK", "WU", "WY", "WYNN", "X", "XEL", "XOM", "XRX", "YELP", "ZION", "ZM", "ARKK", "DIA", "EEM", "EFA", "EWJ", "EWW", "EWY", "EWZ", "FXE", "FXI", "GDX", "GLD", "HYG", "IBB", "IWM", "IYR", "KRE", "LQD", "OIH", "QQQ", "SCHD", "SLV", "SMH", "SPXL", "SPXS", "SPY", "SQQQ", "TBT", "TLT", "TQQQ", "UNG", "USO", "UVXY", "VGK", "VXX", "XBI", "XHB", "XLB", "XLC", "XLE", "XLF", "XLI", "XLK", "XLP", "XLRE", "XLU", "XLV", "XLY", "XOP", "XRT"].sort()
+  const symbols = ["AAP", "AAPL", "ABBV", "ABT", "ACN", "ADBE", "ADI", "ADM", "ADP", "ADSK", "AEP", "AES", "AFL", "AGNC", "AIG", "AKAM", "ALK", "ALL", "AMAT", "AMD", "AMGN", "AMRN", "AMZN", "ANTM", "APA", "APH", "APTV", "ATVI", "AVGO", "AXP", "BABA", "BAC", "BAX", "BBY", "BEN", "BIDU", "BIIB", "BK", "BKR", "BMY", "BP", "BSX", "BX", "BYND", "C", "CAH", "CAT", "CB", "CCI", "CCL", "CF", "CFG", "CHWY", "CI", "CL", "CLF", "CLX", "CMCSA", "CME", "CNC", "CNP", "COF", "COP", "COST", "CPB", "CPRI", "CRM", "CRON", "CRWD", "CSCO", "CSX", "CTVA", "CVS", "CVX", "CZR", "D", "DAL", "DD", "DE", "DHI", "DHR", "DIS", "DISCA", "DISCK", "DISH", "DKNG", "DLR", "DOCU", "DOW", "DRI", "DVN", "DXC", "EA", "EBAY", "ED", "EIX", "EMR", "EOG", "EQR", "EVRG", "EW", "EXC", "EXPE", "F", "FANG", "FAST", "FCX", "FDX", "FE", "FISV", "FITB", "FOXA", "FSLR", "FTI", "FTV", "GD", "GE", "GILD", "GLW", "GM", "GOLD", "GOOG", "GOOGL", "GPRO", "GPS", "GS", "HAL", "HBAN", "HBI", "HCA", "HD", "HFC", "HIG", "HLT", "HOG", "HOLX", "HON", "HPE", "HPQ", "IBM", "ICE", "INTC", "IP", "IPG", "IRM", "IVZ", "JCI", "JD", "JNJ", "JNPR", "JPM", "K", "KHC", "KMI", "KO", "KR", "KSS", "LEN", "LKQ", "LLY", "LNC", "LOW", "LUMN", "LUV", "LVS", "LYB", "LYFT", "MA", "MAR", "MARA", "MAS", "MCD", "MCHP", "MDLZ", "MDT", "MET", "META", "MGM", "MMM", "MO", "MOS", "MPC", "MRK", "MRNA", "MRO", "MRVL", "MS", "MSFT", "MTB", "MU", "NCLH", "NEE", "NEM", "NET", "NFLX", "NKE", "NLOK", "NOW", "NRG", "NTAP", "NTES", "NVAX", "NVDA", "NWL", "NWSA", "O", "OKE", "OMC", "ORCL", "OXY", "PBCT", "PBR", "PEAK", "PEP", "PFE", "PFG", "PG", "PGR", "PNC", "PPL", "PRU", "PSX", "PXD", "PYPL", "QCOM", "RCL", "RF", "RIG", "ROKU", "ROST", "RTX", "SBUX", "SCHW", "SHOP", "SIRI", "SLB", "SO", "SPG", "SQ", "STX", "SWKS", "SYF", "SYY", "T", "TAP", "TCOM", "TGT", "TJX", "TMO", "TMUS", "TPR", "TRIP", "TRV", "TSLA", "TSM", "TSN", "TT", "TTD", "TTWO", "TXN", "UA", "UAL", "UBER", "ULTA", "UNH", "UNM", "UNP", "UPS", "URBN", "USB", "V", "VFC", "VTR", "VZ", "WAB", "WBA", "WDC", "WFC", "WM", "WMB", "WMT", "WRK", "WU", "WY", "WYNN", "X", "XEL", "XOM", "XRX", "YELP", "ZION", "ZM", "ARKK", "DIA", "EEM", "EFA", "EWJ", "EWW", "EWY", "EWZ", "FXE", "FXI", "GDX", "GLD", "HYG", "IBB", "IWM", "IYR", "KRE", "LQD", "OIH", "QQQ", "SCHD", "SLV", "SMH", "SPXL", "SPXS", "SPY", "SQQQ", "TBT", "TLT", "TQQQ", "UNG", "USO", "UVXY", "VGK", "VXX", "XBI", "XHB", "XLB", "XLC", "XLE", "XLF", "XLI", "XLK", "XLP", "XLRE", "XLU", "XLV", "XLY", "XOP", "XRT"].sort()
 
   const dollarUS = Intl.NumberFormat("en-US", {
     style: "currency",
@@ -23,56 +24,53 @@ const App = () => {
   })
 
   const handleOptionsSelect = (options) => {
-    setselectedSymbols(options);
-  };
+    setselectedSymbols(options)
+  }
 
   const handleSymbolRemove = (symbol) => {
     // Remove the selected symbol from the selectedSymbols array
-    const updatedSymbols = selectedSymbols.filter((s) => s !== symbol);
-    setselectedSymbols(updatedSymbols);
-    
+    const updatedSymbols = selectedSymbols.filter((s) => s !== symbol)
+    setselectedSymbols(updatedSymbols)
+
     // Filter the table based on the remaining selected symbols
     const filteredStrategies = strategies.filter((strategy) => {
-      const strategySymbols = strategy.optionSymbol.split(" ");
-      return strategySymbols.every((s) => updatedSymbols.includes(s));
-    });
-    setStrategies(filteredStrategies);
+      const strategySymbols = strategy.optionSymbol.split(" ")
+      return strategySymbols.every((s) => updatedSymbols.includes(s))
+    })
+    setStrategies(filteredStrategies)
   }
 
   const handleInputChange = (event) => {
-    setTargetValue(event.target.value);
-  };
+    setTargetValue(event.target.value)
+  }
 
   const handleSubmit = async (event) => {
-    event.preventDefault();
+    event.preventDefault()
 
     // Check if more than 5 symbols are selected
     if (selectedSymbols.length > 5) {
-      alert("You can select up to 5 symbols");
-      return;
+      alert("You can select up to 5 symbols")
+      return
     }
 
-    setLoading(true);
+    setLoading(true)
     try {
-      const symbolsQueryParam = selectedSymbols.join(",");
-      const response = await axios.get(`/strategies?symbols=${symbolsQueryParam}&target=${targetValue}`);
-      setStrategies(response.data);
-      setLoading(false);
+      const symbolsQueryParam = selectedSymbols.join(",")
+      const response = await axios.get(`/strategies?symbols=${symbolsQueryParam}&target=${targetValue}`)
+      setStrategies(response.data)
+      setLoading(false)
       console.log(response.data)
     } catch (error) {
-      console.error("Error fetching data:", error);
-      setLoading(false);
+      console.error("Error fetching data:", error)
+      setLoading(false)
     }
-  };
+  }
 
 
   const defaultColDef = {
     resizable: true,
-  };
+  }
 
-  const gridOptions = {
-    autoSizePadding: true,
-  };
 
   const columnDefs = [
     {
@@ -80,15 +78,15 @@ const App = () => {
       pinned: "left",
       autoHeight: true,
       cellRenderer: (params) => {
-        const { data } = params;
-        const { optionSymbol, strategy, strikes } = data;
+        const { data } = params
+        const { optionSymbol, strategy, strikes } = data
         return (
           <div style={{ whiteSpace: "normal", paddingRight: "20px", paddingBottom: "20px" }}>
             <div className="gold">{optionSymbol}</div>
             <div>{strategy}</div>
             <div className="grey">{strikes}</div>
           </div>
-        );
+        )
       },
     },
     { headerName: "DTE", field: "dte", sortable: true, filter: 'agNumberColumnFilter' },
@@ -99,28 +97,26 @@ const App = () => {
     { headerName: "Max Loss", field: "maxLoss", sortable: true, filter: 'agNumberColumnFilter', valueFormatter: (params) => dollarUS.format(params.value), cellStyle: { color: '#FD1C03' } },
     { headerName: "Max Win Probability", field: "maxWinProb", sortable: true, filter: 'agNumberColumnFilter', valueFormatter: (params) => params.value + '%' },
     { headerName: "Max Loss Probability", field: "maxLossProb", sortable: true, filter: 'agNumberColumnFilter', valueFormatter: (params) => params.value + '%' },
-  ];
+  ]
 
   const onGridReady = (params) => {
-    if (window.innerWidth <= 768) {
-      setGridHeight("72vh");
+    if (isMobile) {
+      setGridHeight("75vh")
+      setDefaultColWidth(30)
     } else {
-      params.api.sizeColumnsToFit();
+      setGridHeight("84vh")
+      setDefaultColWidth(undefined)
+      params.api.sizeColumnsToFit()
     }
-  };
+  }
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(isMobile);
-      if (isMobile) {
-        setGridHeight("70vh");
-      } else {
-        setGridHeight("84vh");
-      }
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [isMobile]);
+      setIsMobile(isMobile)
+    }
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
 
   return (
     <>
@@ -157,10 +153,10 @@ const App = () => {
                 Submit
               </Button>
             </InputGroup>
-            
+
             <div className="text-center m-2">
-            <Button size="sm" variant="outline-secondary" style={{ marginRight: "10px" }} disabled >
-                  Selected Symbols : 
+              <Button size="sm" variant="outline-secondary" style={{ marginRight: "10px" }} disabled >
+                Selected Symbols :
               </Button>
               {selectedSymbols.map((symbol) => (
                 <Button size="sm" variant="secondary" key={symbol} style={{ marginRight: "10px" }} onClick={() => handleSymbolRemove(symbol)}>
@@ -183,6 +179,15 @@ const App = () => {
               </Spinner>
             </div>
           </Modal.Body>
+          <Modal.Footer>
+            <div className="mt-5 text-white text-center" style={{ display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+              <span>Powered by</span>
+              <a href='https://tradier.com'>
+                <img src={process.env.PUBLIC_URL + "/tradier_logo.svg"} alt="Options Analyzer" width="45" style={{ marginLeft: "5px", marginBottom: "3px" }} />
+              </a>
+            </div>
+
+          </Modal.Footer>
         </Modal>
         {!loading && (
           <div className="ag-theme-balham-dark" style={{ height: gridHeight, width: "98%", margin: "0 auto" }}>
@@ -190,7 +195,7 @@ const App = () => {
             <AgGridReact
               defaultColDef={defaultColDef}
               columnDefs={columnDefs}
-              gridOptions={gridOptions}
+              gridOptions={{ defaultColDef: { width: defaultColWidth }}} 
               rowData={strategies}
               deltaRowDataMode={true}
               onGridReady={onGridReady}
@@ -198,16 +203,8 @@ const App = () => {
           </div>
         )}
       </Container>
-      <footer>
-      <div className="mt-5 text-white text-center" style={{ display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-          <span>Powered by</span>
-          <a href='https://tradier.com'>
-            <img src={process.env.PUBLIC_URL + "/tradier_logo.svg"} alt="Options Analyzer" width="45" style={{ marginLeft: "5px", marginBottom: "3px" }} />
-          </a>
-        </div>
-      </footer>
     </>
-  );
+  )
 }
 
-export default App;
+export default App
