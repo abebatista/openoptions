@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button, Modal, Form } from "react-bootstrap";
+import "../App.css"
 
 const SelectOptions = ({ options, buttonText, onSelect }) => {
   const [show, setShow] = useState(false);
@@ -21,6 +22,15 @@ const SelectOptions = ({ options, buttonText, onSelect }) => {
     setSelectedOptions(updatedSelectedOptions);
   };
 
+  const handleOptionTouchStart = (e) => {
+    e.preventDefault();
+    const { value } = e.target;
+    const updatedSelectedOptions = selectedOptions.includes(value)
+      ? selectedOptions.filter((option) => option !== value)
+      : [...selectedOptions, value];
+    setSelectedOptions(updatedSelectedOptions);
+  };
+
   const handleOptionKeyDown = (e) => {
     if (e.key === " ") {
       e.preventDefault();
@@ -34,24 +44,26 @@ const SelectOptions = ({ options, buttonText, onSelect }) => {
 
   return (
     <>
-      <Button variant="secondary" onClick={handleShow}>
+      <Button variant="outline-secondary" onClick={handleShow}>
         {buttonText}
       </Button>
 
-      <Modal show={show} onHide={handleClose}>
-        <Modal.Header closeButton>
-          <Modal.Title>Select Options</Modal.Title>
+      <Modal show={show} onHide={handleClose} className="model-content">
+        <Modal.Header className="bg-dark" closeButton>
+          <Modal.Title className="text-white">Select Symbols</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group controlId="options">
-              <Form.Control as="select" multiple>
+        <div className="text-start text-white bg-dark p-3">Select up to five symbols ...</div>
+        <Modal.Body className="bg-dark">
+          <Form className="bg-dark">
+            <Form.Group className="bg-dark" controlId="options">
+              <Form.Control className="bg-dark text-white" as="select" multiple>
                 {options.map((option) => (
                   <option
                     key={option}
                     value={option}
                     onMouseDown={handleOptionMouseDown}
                     onKeyDown={handleOptionKeyDown}
+                    onTouchStart={handleOptionTouchStart}
                     style={{
                       backgroundColor: selectedOptions.includes(option)
                         ? "#696969"
@@ -68,11 +80,11 @@ const SelectOptions = ({ options, buttonText, onSelect }) => {
             </Form.Group>
           </Form>
         </Modal.Body>
-        <Modal.Footer>
+        <Modal.Footer className="bg-dark">
           <Button variant="secondary" onClick={handleClose}>
             Close
           </Button>
-          <Button variant="primary" onClick={handleSave}>
+          <Button variant="outline-secondary" onClick={handleSave}>
             Save Changes
           </Button>
         </Modal.Footer>

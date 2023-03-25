@@ -33,6 +33,17 @@ Button {
   color: white!important;
 }
 
+.modal-content {
+  border-radius: 10px!important;
+  background-clip: padding-box!important;
+}
+
+.invisible-placeholder {
+  visibility: hidden;
+  width: 0px;
+  height: 50px;
+}
+
 @media (max-width: 767px) {
   .navbar {
     flex-direction: column;
