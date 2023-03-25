@@ -113,7 +113,7 @@ const App = () => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
       if (isMobile) {
-        setGridHeight("73vh");
+        setGridHeight("70vh");
       } else {
         setGridHeight("84vh");
       }
