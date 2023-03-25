@@ -15,18 +15,14 @@ const SelectOptions = ({ options, buttonText, onSelect }) => {
   };
 
   const handleOptionSelect = (e) => {
-    const { value } = e.target;
-    const newSelectedOptions = selectedOptions.includes(value)
-      ? selectedOptions.filter((option) => option !== value)
-      : [...selectedOptions, value];
-    
-    if (newSelectedOptions.length > 10) {
-      return;
-    }
+    const { options } = e.target;
+    const values = Array.from(options)
+      .filter((option) => option.selected)
+      .map((option) => option.value);
   
-    setSelectedOptions(newSelectedOptions);
+    setSelectedOptions(values);
   };
-  
+
   return (
     <>
       <Button variant="outline-secondary" onClick={handleShow}>
@@ -37,7 +33,7 @@ const SelectOptions = ({ options, buttonText, onSelect }) => {
         <Modal.Header className="bg-dark" closeButton>
           <Modal.Title className="text-white">Select Symbols</Modal.Title>
         </Modal.Header>
-        <div className="text-start text-white bg-dark p-3">Select up to 10 symbols ...</div>
+        <div className="text-start text-white bg-dark p-3">Select up to 10 symbols ... <br></br>Hold 'Ctrl' while clicking to select multiple</div>
         <Modal.Body className="bg-dark">
           <Form className="bg-dark">
             <Form.Group className="bg-dark" controlId="options">
