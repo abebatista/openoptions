@@ -47,6 +47,12 @@ const App = () => {
   const handleSubmit = async (event) => {
     event.preventDefault()
 
+  // Check if no symbols are selected
+  if (selectedSymbols.length === 0) {
+    alert("Please select at least one symbol")
+    return
+  }
+
     // Check if more than 5 symbols are selected
     if (selectedSymbols.length > 5) {
       alert("You can select up to 5 symbols")
@@ -62,6 +68,7 @@ const App = () => {
       console.log(response.data)
     } catch (error) {
       console.error("Error fetching data:", error)
+      alert("One of the symbols you selected does not meet healthy trade criteria and data cannot be returned")
       setLoading(false)
     }
   }
@@ -179,7 +186,7 @@ const App = () => {
               </Spinner>
             </div>
           </Modal.Body>
-          <Modal.Footer>
+          <Modal.Footer className="bg-dark text-white">
             <div className="mt-5 text-white text-center" style={{ display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
               <span>Powered by</span>
               <a href='https://tradier.com'>
