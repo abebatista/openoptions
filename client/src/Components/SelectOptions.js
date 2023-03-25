@@ -8,10 +8,11 @@ const SelectOptions = ({ options, buttonText, onSelect }) => {
 
   const handleShow = () => setShow(true);
   const handleClose = () => setShow(false);
-  const handleSave = () => {
-    onSelect(selectedOptions);
-    handleClose();
-  };
+const handleSave = () => {
+  onSelect(selectedOptions);
+  setSelectedOptions([]); // clear the selected options
+  handleClose();
+};
 
   const handleOptionMouseDown = (e) => {
     e.preventDefault();
