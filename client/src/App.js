@@ -129,7 +129,7 @@ const App = () => {
                 alt="Options Analyzer"
                 width="35"
                 height="35"
-                className="d-inline-block align-top m-3"
+                className="d-inline-block align-top m-4"
               />
               <h2 className="text-white m-1">OPEN OPTIONS</h2>
             </div>
