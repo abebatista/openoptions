@@ -60,6 +60,8 @@ const handleSave = () => {
                       color: selectedOptions.includes(option)
                         ? "#fff"
                         : null,
+
+                        userSelect: 'none', // disable text selection
                     }}
                   >
                     {option}
