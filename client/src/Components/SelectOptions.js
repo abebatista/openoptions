@@ -23,7 +23,7 @@ const SelectOptions = ({ options, buttonText, onSelect }) => {
     option: (provided, state) => ({
       ...provided,
       backgroundColor: state.isSelected ? "#696969" : null,
-      color: state.isSelected ? "#fff" : null,
+      color: state.isSelected ? "#fff" : "#000",
     }),
     control: (provided) => ({
       ...provided,
@@ -50,10 +50,15 @@ const SelectOptions = ({ options, buttonText, onSelect }) => {
         <Modal.Header className="bg-dark" closeButton>
           <Modal.Title className="text-white">Select Symbols</Modal.Title>
         </Modal.Header>
-        <div className="text-start text-white bg-dark p-3">Select up to 10 symbols ...</div>
+        <div className="text-start text-white bg-dark p-3">
+          Select up to 10 symbols ...
+        </div>
         <Modal.Body className="bg-dark">
           <Select
-            options={options.map((option) => ({ value: option, label: option }))}
+            options={options.map((option) => ({
+              value: option,
+              label: option,
+            }))}
             isMulti
             styles={customStyles}
             value={selectedOptions}
