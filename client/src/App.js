@@ -109,7 +109,7 @@ const App = () => {
 
   const onGridReady = (params) => {
     if (isMobile) {
-      setGridHeight("69vh")
+      setGridHeight("68vh")
       setDefaultColWidth(30)
     } else {
       setGridHeight("84vh")

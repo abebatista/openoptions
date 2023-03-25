@@ -5,7 +5,6 @@ import "../App.css"
 const SelectOptions = ({ options, buttonText, onSelect }) => {
   const [show, setShow] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState([]);
-  const [touchedIndex, setTouchedIndex] = useState(-1);
 
   const handleShow = () => setShow(true);
   const handleClose = () => setShow(false);
@@ -21,36 +20,6 @@ const SelectOptions = ({ options, buttonText, onSelect }) => {
       ? selectedOptions.filter((option) => option !== value)
       : [...selectedOptions, value];
     setSelectedOptions(updatedSelectedOptions);
-  };
-
-  const handleOptionTouchStart = (e) => {
-    e.preventDefault();
-    const { value } = e.target;
-    const index = options.indexOf(value);
-    setTouchedIndex(index);
-  };
-
-  const handleOptionTouchEnd = (e) => {
-    if (touchedIndex >= 0) {
-      const value = options[touchedIndex];
-      const updatedSelectedOptions = selectedOptions.includes(value)
-        ? selectedOptions.filter((option) => option !== value)
-        : [...selectedOptions, value];
-      setSelectedOptions(updatedSelectedOptions);
-      setTouchedIndex(-1);
-      e.preventDefault();
-    }
-  };
-
-  const handleOptionKeyDown = (e) => {
-    if (e.key === " ") {
-      e.preventDefault();
-      const { value } = e.target;
-      const updatedSelectedOptions = selectedOptions.includes(value)
-        ? selectedOptions.filter((option) => option !== value)
-        : [...selectedOptions, value];
-      setSelectedOptions(updatedSelectedOptions);
-    }
   };
 
   return (
@@ -73,9 +42,6 @@ const SelectOptions = ({ options, buttonText, onSelect }) => {
                     key={option}
                     value={option}
                     onMouseDown={handleOptionMouseDown}
-                    onTouchStart={handleOptionTouchStart}
-                    onTouchEnd={handleOptionTouchEnd}
-                    onKeyDown={handleOptionKeyDown}
                     style={{
                       backgroundColor: selectedOptions.includes(option)
                         ? "#696969"
