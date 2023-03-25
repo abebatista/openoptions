@@ -44,6 +44,11 @@ Button {
   height: 50px;
 }
 
+.custom-option input[type='checkbox']:checked ~ span {
+  background-color: #696969 !important;
+  border-color: #696969 !important;
+}
+
 @media (max-width: 800px) {
   .navbar {
     flex-direction: column;
