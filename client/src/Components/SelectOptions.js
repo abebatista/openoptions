@@ -14,20 +14,12 @@ const SelectOptions = ({ options, buttonText, onSelect }) => {
     setSelectedOptions([]);
   };
 
-  const handleSelectOption = (value) => {
+  const handleOptionSelect = (e) => {
+    const { value } = e.target;
     const updatedSelectedOptions = selectedOptions.includes(value)
       ? selectedOptions.filter((option) => option !== value)
       : [...selectedOptions, value];
     setSelectedOptions(updatedSelectedOptions);
-  };
-
-  const handleOptionSelect = (e) => {
-    e.preventDefault()
-    const { options } = e.target;
-    const values = Array.from(options)
-      .filter(option => option.selected)
-      .map(option => option.value);
-    setSelectedOptions(values);
   };
 
   return (
@@ -48,7 +40,8 @@ const SelectOptions = ({ options, buttonText, onSelect }) => {
                 className="bg-dark text-white"
                 as="select"
                 multiple
-                onChange={handleOptionSelect}
+                onClick={handleOptionSelect}
+                onTouchStart={handleOptionSelect}
               >
                 {options.map((option) => (
                   <option
