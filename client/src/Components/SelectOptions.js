@@ -8,21 +8,30 @@ const SelectOptions = ({ options, buttonText, onSelect }) => {
 
   const handleShow = () => setShow(true);
   const handleClose = () => setShow(false);
-const handleSave = () => {
-  onSelect(selectedOptions);
-  handleClose();
-  setSelectedOptions([])
-};
+  const handleSave = () => {
+    onSelect(selectedOptions);
+    handleClose();
+    setSelectedOptions([]);
+  };
 
-  const handleClick = (e) => {
-    e.preventDefault();
-    const { value } = e.target;
+  const handleSelectOption = (value) => {
     const updatedSelectedOptions = selectedOptions.includes(value)
       ? selectedOptions.filter((option) => option !== value)
       : [...selectedOptions, value];
     setSelectedOptions(updatedSelectedOptions);
   };
 
+  const handleOptionClick = (e) => {
+    e.preventDefault();
+    const { value } = e.target;
+    handleSelectOption(value);
+  };
+
+  const handleOptionTouch = (e) => {
+    e.preventDefault();
+    const { value } = e.target;
+    handleSelectOption(value);
+  };
 
   return (
     <>
@@ -38,19 +47,23 @@ const handleSave = () => {
         <Modal.Body className="bg-dark">
           <Form className="bg-dark">
             <Form.Group className="bg-dark" controlId="options">
-              <Form.Control className="bg-dark text-white" as="select" multiple>
+              <Form.Control
+                className="bg-dark text-white"
+                as="select"
+                multiple
+                onTouchEnd={handleOptionTouch}
+              >
                 {options.map((option) => (
                   <option
                     key={option}
                     value={option}
-                    onClick={handleClick}
+                    onClick={handleOptionClick}
+                    onTouchEnd={handleOptionTouch}
                     style={{
                       backgroundColor: selectedOptions.includes(option)
                         ? "#696969"
                         : null,
-                      color: selectedOptions.includes(option)
-                        ? "#fff"
-                        : null,
+                      color: selectedOptions.includes(option) ? "#fff" : null,
                     }}
                   >
                     {option}
