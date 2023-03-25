@@ -30,7 +30,7 @@ const SelectOptions = ({ options, buttonText, onSelect }) => {
     setTouchedIndex(index);
   };
 
-  const handleOptionTouchEnd = () => {
+  const handleOptionTouchEnd = (e) => {
     if (touchedIndex >= 0) {
       const value = options[touchedIndex];
       const updatedSelectedOptions = selectedOptions.includes(value)
@@ -38,6 +38,7 @@ const SelectOptions = ({ options, buttonText, onSelect }) => {
         : [...selectedOptions, value];
       setSelectedOptions(updatedSelectedOptions);
       setTouchedIndex(-1);
+      e.preventDefault();
     }
   };
 
