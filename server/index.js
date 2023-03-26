@@ -54,7 +54,7 @@ app.get('/strategies', async (req, res) => {
         const shortPutSpreads = constructshortPutSpreads(optionData, optionSymbol, underlyingPrice, expiration, dte, target);
         strategies.push(...ironCondors, ...shortCallSpreads, ...shortPutSpreads);
       }
-      const filteredStrategies = strategies.filter((strategy) => strategy.dte !== null && strategy.expectancy > 0 && strategy.bid > 0 && strategy.openInterest >= 0 && strategy.volume >= 0)
+      const filteredStrategies = strategies.filter((strategy) => strategy.dte !== null && strategy.expectancy > 0 && strategy.bid > 0 && strategy.openInterest >= 100 && strategy.volume >= 500)
       allStrategies.push(...filteredStrategies);
     }
 
