@@ -45,7 +45,7 @@ Button {
 }
 
 .listHeight {
-  height: 300px;
+  height: 15rem;
 }
 
 @media (max-width: 800px) {
