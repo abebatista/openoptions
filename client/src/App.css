@@ -44,6 +44,10 @@ Button {
   height: 50px;
 }
 
+.listHeight {
+  height: 300px;
+}
+
 @media (max-width: 800px) {
   .navbar {
     flex-direction: column;

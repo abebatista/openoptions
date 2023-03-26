@@ -51,8 +51,8 @@ app.get('/strategies', async (req, res) => {
         const dte = calculateDTE(moment(expiration));
         const ironCondors = constructIronCondors(optionData, optionSymbol, underlyingPrice, expiration, dte, target);
         const shortCallSpreads = constructshortCallSpreads(optionData, optionSymbol, underlyingPrice, expiration, dte, target);
-        const shortCreditSpreads = constructshortCreditSpreads(optionData, optionSymbol, underlyingPrice, expiration, dte, target);
-        strategies.push(...ironCondors, ...shortCallSpreads, ...shortCreditSpreads);
+        const shortPutSpreads = constructshortPutSpreads(optionData, optionSymbol, underlyingPrice, expiration, dte, target);
+        strategies.push(...ironCondors, ...shortCallSpreads, ...shortPutSpreads);
       }
       const filteredStrategies = strategies.filter((strategy) => strategy.dte !== null && strategy.expectancy > 0 && strategy.bid > 0 && strategy.openInterest >= 0 && strategy.volume >= 0)
       allStrategies.push(...filteredStrategies);
@@ -209,13 +209,15 @@ const constructIronCondors = (options, optionSymbol, underlyingPrice, expiration
       const credit = (callCredit + putCredit) * 100 <= 0 ? 1 : (callCredit + putCredit) * 100;
       const maxLoss = Math.abs((Math.max(callSpreadWidth, putSpreadWidth) * 100) - credit);
 
-      // Calculate probabilities and expectancy
-      const maxWinProb = 100 - Math.abs((getProbs(underlyingPrice, shortPut.strike, dte, shortPutIV)[1]) - (getProbs(underlyingPrice, shortCall.strike, dte, shortCallIV)[0]));
-      const maxLossProb = 100 - Math.min(getProbs(underlyingPrice, longPut.strike, dte, longPutIV)[0], getProbs(underlyingPrice, longCall.strike, dte, longCallIV)[1]
-      );
+      // Calculate probabilities and expectancy 
+      // Max win prob needs to be calulated as short put prob - short call prob because because the probability of the point being above the short put includes 
+      //the probability of the point being between short put and short call, while the probability of the point being above the short call does not. 
+      const maxWinProb = Math.abs((getProbs(underlyingPrice, shortPut.strike, dte, shortPutIV)[1]) - (getProbs(underlyingPrice, shortCall.strike, dte, shortCallIV)[1])).toFixed(2);
+      const maxLossProb = Math.min(getProbs(underlyingPrice, longPut.strike, dte, longPutIV)[0], getProbs(underlyingPrice, longCall.strike, dte, longCallIV)[1]).toFixed(2);
       const expectancy = Math.floor((credit * (maxWinProb / 100)) - (maxLoss * (maxLossProb / 100)));
       const expectancyYield = Math.floor(((expectancy / (underlyingPrice * 100)) / dte) * (252 / 12))*100
       const earlyProfit = Math.ceil((((target + (maxLoss * (maxLossProb / 100))) / (maxWinProb / 100)) / credit) * 100) > 100 ? 100 : Math.ceil((((target + (maxLoss * (maxLossProb / 100))) / (maxWinProb / 100)) / credit) * 100)
+      const riskReward = Math.ceil((maxLoss/credit)*100)
 
       // Add the Iron Condor to the list of strategies
       ironCondors.push({
@@ -225,7 +227,7 @@ const constructIronCondors = (options, optionSymbol, underlyingPrice, expiration
         strategy: "Iron Condor",
         optionSymbol: `${optionSymbol}`,
         dte: dte,
-        strikes: `+${longPut.strike}P / -${shortPut.strike}P / -${shortCall.strike}C / +${longCall.strike}C`,
+        strikes: `+${longPut.strike}P [Δ${longPut.greeks.delta.toFixed(2)}] -${shortPut.strike}P [Δ${shortPut.greeks.delta.toFixed(2)}] -${shortCall.strike}C [Δ${shortCall.greeks.delta.toFixed(2)}] +${longCall.strike}C [Δ${longCall.greeks.delta.toFixed(2)}]`,
         expectancy: expectancy,
         expectancyYield: expectancyYield,
         earlyProfit: earlyProfit,
@@ -233,10 +235,10 @@ const constructIronCondors = (options, optionSymbol, underlyingPrice, expiration
         maxLoss: maxLoss,
         maxWinProb: maxWinProb,
         maxLossProb: maxLossProb,
+        riskReward: riskReward
       });
     }
   }
-
   return ironCondors;
 };
 
@@ -263,11 +265,12 @@ const constructshortCallSpreads = (options, optionSymbol, underlyingPrice, expir
       // Calculate probabilities and expectancy
       const shortCallIV = shortCall.greeks.smv_vol;
       const longCallIV = longCall.greeks.smv_vol;
-      const maxWinProb = 100 - getProbs(underlyingPrice, shortCall.strike, dte, shortCallIV)[0];
-      const maxLossProb = 100 - getProbs(underlyingPrice, longCall.strike, dte, longCallIV)[1];
+      const maxWinProb = getProbs(underlyingPrice, shortCall.strike, dte, shortCallIV)[0];
+      const maxLossProb = getProbs(underlyingPrice, longCall.strike, dte, longCallIV)[1];
       const expectancy = Math.floor((credit * (maxWinProb / 100)) - (maxLoss * (maxWinProb / 100)));
       const expectancyYield = Math.ceil((((expectancy / (underlyingPrice * 100)) / dte) * (252 / 12) * 100))
       const earlyProfit = Math.ceil((((target + (maxLoss * (maxLossProb / 100))) / (maxWinProb / 100)) / credit) * 100) > 100 ? 100 : Math.ceil((((target + (maxLoss * (maxLossProb / 100))) / (maxWinProb / 100)) / credit) * 100)
+      const riskReward = Math.ceil((maxLoss/credit)*100)
 
       shortCallSpreads.push({
         bid: Math.min(shortCall.bid,longCall.bid),
@@ -276,7 +279,7 @@ const constructshortCallSpreads = (options, optionSymbol, underlyingPrice, expir
         strategy: "Short Call Spread",
         optionSymbol: `${optionSymbol}`,
         dte: dte,
-        strikes: `-${shortCall.strike}C / +${longCall.strike}C`,
+        strikes: `-${shortCall.strike}C [Δ${shortCall.greeks.delta.toFixed(2)}] +${longCall.strike}C [Δ${longCall.greeks.delta.toFixed(2)}]`,
         expectancy: expectancy,
         expectancyYield: expectancyYield,
         earlyProfit: earlyProfit,
@@ -284,15 +287,16 @@ const constructshortCallSpreads = (options, optionSymbol, underlyingPrice, expir
         maxLoss: maxLoss,
         maxWinProb: maxWinProb,
         maxLossProb: maxLossProb,
+        riskReward: riskReward
       });
     }
   }
   return shortCallSpreads
 }
 
-// Construct Short Credit Spreads
-const constructshortCreditSpreads = (options, optionSymbol, underlyingPrice, expiration, dte, target) => {
-  const shortCreditSpreads = [];
+// Construct Short Put Spreads
+const constructshortPutSpreads = (options, optionSymbol, underlyingPrice, expiration, dte, target) => {
+  const shortPutSpreads = [];
 
   // Filter puts
   const puts = options.filter((option) => option.option_type === "put");
@@ -326,15 +330,16 @@ const constructshortCreditSpreads = (options, optionSymbol, underlyingPrice, exp
       const expectancy = Math.floor((credit * (maxWinProb / 100)) - (maxLoss * (maxWinProb / 100)));
       const expectancyYield = Math.ceil((((expectancy / (underlyingPrice * 100)) / dte) * (252 / 12) * 100))
       const earlyProfit = Math.ceil((((target + (maxLoss * (maxLossProb / 100))) / (maxWinProb / 100)) / credit) * 100) > 100 ? 100 : Math.ceil((((target + (maxLoss * (maxLossProb / 100))) / (maxWinProb / 100)) / credit) * 100)
+      const riskReward = Math.ceil((maxLoss/credit)*100)
 
-      shortCreditSpreads.push({
+      shortPutSpreads.push({
         bid: Math.min(shortPut.bid,longPut.bid),
         openInterest: Math.min(shortPut.open_interest,longPut.open_interest),
         volume: Math.min(shortPut.volume,longPut.volume),
-        strategy: "Short Credit Spread",
+        strategy: "Short Put Spread",
         optionSymbol: `${optionSymbol}`,
         dte: dte,
-        strikes: `+${shortPut.strike}P / -${longPut.strike}P`,
+        strikes: `+${shortPut.strike}P [Δ ${shortPut.greeks.delta.toFixed(2)}] -${longPut.strike}P [Δ ${longPut.greeks.delta.toFixed(2)}]`,
         expectancy: expectancy,
         expectancyYield: expectancyYield,
         earlyProfit: earlyProfit,
@@ -342,11 +347,12 @@ const constructshortCreditSpreads = (options, optionSymbol, underlyingPrice, exp
         maxLoss: maxLoss,
         maxWinProb: maxWinProb,
         maxLossProb: maxLossProb,
+        riskReward: riskReward
       });
     }
   }
 
-  return shortCreditSpreads;
+  return shortPutSpreads;
 };
 
 const calculateDTE = (expirationDate) => {
@@ -390,12 +396,12 @@ const getProbs = (underlyingPrice, strike, dte, iv) => {
   let x = 1 - z * (y5 - y4 + y3 - y2 + y1);
   x = Math.floor(x * 100000) / 100000;
 
-  if (d1 < 0) {
-    x = 1 - x;
-  }
+  //if (d1 < 0) {
+  //  x = 1 - x;
+  //}
 
-  let pabove = Math.floor(Math.floor(x * 1000) / 10);
-  let pbelow = Math.ceil(Math.floor((1 - x) * 1000) / 10);
+  let pabove = (x * 100).toFixed(2);
+  let pbelow = ((1 - x) * 100).toFixed(2);
 
   //return probabilities for underlying price ending up above or below strike
   return [pbelow, pabove];

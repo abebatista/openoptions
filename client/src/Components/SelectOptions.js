@@ -38,7 +38,7 @@ const SelectOptions = ({ options, buttonText, onSelect }) => {
           <Form className="bg-dark">
             <Form.Group className="bg-dark" controlId="options">
               <Form.Control
-                className="bg-dark text-white"
+                className="bg-dark text-white listHeight"
                 as="select"
                 multiple
                 onChange={handleOptionSelect}

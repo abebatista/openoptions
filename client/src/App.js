@@ -85,6 +85,17 @@ const App = () => {
       pinned: "left",
       width: 110,
       autoHeight: true,
+      field: "strategy", // add field property for sorting
+      sortable: true, // enable sorting
+      filter: "agSetColumnFilter", // use agSetColumnFilter for filtering
+      filterParams: {
+        values: (params) => {
+          const allData = params.api.getRenderedNodes().map((node) => node.data); // get all the data
+          const uniqueStrategies = new Set(allData.map((data) => data.strategy)); // get unique strategy names
+          return Array.from(uniqueStrategies); // convert Set to Array
+        },
+        newRowsAction: "keep", // keep the rows when the filter is applied
+      },
       cellRenderer: (params) => {
         const { data } = params
         const { optionSymbol, strategy, strikes } = data
@@ -96,15 +107,16 @@ const App = () => {
           </div>
         )
       },
-    },
+    },    
     { headerName: "DTE", field: "dte", sortable: true, filter: 'agNumberColumnFilter' },
     { headerName: "Expectancy", field: "expectancy", sortable: true, headerTooltip: "The expectancy of the trade: pppt = (max profit * max profit probability) - (max loss * max loss probability)", filter: 'agNumberColumnFilter', valueFormatter: (params) => dollarUS.format(params.value) },
     { headerName: "Expectancy Yield", field: "expectancyYield", sortable: true, headerTooltip: "A comparison indicator based off of Underlying Value, Probable Profit Per Trade, and DTE", filter: 'agNumberColumnFilter', valueFormatter: (params) => params.value + '%' },
     { headerName: "Suggested Exit", field: "earlyProfit", sortable: true, headerTooltip: "A suggested early exit target(%) that will maintain you expectancy Target($)", filter: 'agNumberColumnFilter', valueFormatter: (params) => params.value + '%' },
     { headerName: "Credit", field: "credit", sortable: true, filter: 'agNumberColumnFilter', valueFormatter: (params) => dollarUS.format(params.value), cellStyle: { color: '#16F529' } },
     { headerName: "Max Loss", field: "maxLoss", sortable: true, filter: 'agNumberColumnFilter', valueFormatter: (params) => dollarUS.format(params.value), cellStyle: { color: '#FD1C03' } },
-    { headerName: "Max Win Probability", field: "maxWinProb", sortable: true, filter: 'agNumberColumnFilter', valueFormatter: (params) => params.value + '%' },
-    { headerName: "Max Loss Probability", field: "maxLossProb", sortable: true, filter: 'agNumberColumnFilter', valueFormatter: (params) => params.value + '%' },
+    { headerName: "Max Win Probability", field: "maxWinProb", sortable: true, filter: 'agNumberColumnFilter', valueFormatter: (params) => params.value < 1 ? '<' + 1 + '%' : Math.floor(params.value) + '%' },
+    { headerName: "Max Loss Probability", field: "maxLossProb", sortable: true, filter: 'agNumberColumnFilter', valueFormatter: (params) => params.value < 1 ? '<' + 1 + '%' : Math.ceil(params.value) + '%' },
+    { headerName: "Risk / Reward", field: "maxLossProb", sortable: true, filter: 'agNumberColumnFilter', valueFormatter: (params) => Math.ceil(params.value) + '%' },
   ]
 
   const onGridReady = (params) => {
