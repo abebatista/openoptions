@@ -83,7 +83,7 @@ const App = () => {
     {
       headerName: "Position",
       pinned: "left",
-      width: 110,
+      width: 215,
       autoHeight: true,
       field: "strategy", // add field property for sorting
       sortable: true, // enable sorting
