@@ -116,7 +116,7 @@ const App = () => {
     { headerName: "Max Loss", field: "maxLoss", sortable: true, filter: 'agNumberColumnFilter', valueFormatter: (params) => dollarUS.format(params.value), cellStyle: { color: '#FD1C03' } },
     { headerName: "Max Win Probability", field: "maxWinProb", sortable: true, filter: 'agNumberColumnFilter', valueFormatter: (params) => params.value < 1 ? '<' + 1 + '%' : Math.floor(params.value) + '%' },
     { headerName: "Max Loss Probability", field: "maxLossProb", sortable: true, filter: 'agNumberColumnFilter', valueFormatter: (params) => params.value < 1 ? '<' + 1 + '%' : Math.ceil(params.value) + '%' },
-    { headerName: "Risk / Reward", field: "maxLossProb", sortable: true, filter: 'agNumberColumnFilter', valueFormatter: (params) => Math.ceil(params.value) + '%' },
+    { headerName: "Reward / Risk", field: "maxLossProb", sortable: true, filter: 'agNumberColumnFilter', valueFormatter: (params) => Math.ceil(params.value) + '%' },
   ]
 
   const onGridReady = (params) => {
