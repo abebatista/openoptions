@@ -217,7 +217,7 @@ const constructIronCondors = (options, optionSymbol, underlyingPrice, expiration
       const expectancy = Math.floor((credit * (maxWinProb / 100)) - (maxLoss * (maxLossProb / 100)));
       const expectancyYield = Math.floor(((expectancy / (underlyingPrice * 100)) / dte) * (252 / 12))*100
       const earlyProfit = Math.ceil((((target + (maxLoss * (maxLossProb / 100))) / (maxWinProb / 100)) / credit) * 100) > 100 ? 100 : Math.ceil((((target + (maxLoss * (maxLossProb / 100))) / (maxWinProb / 100)) / credit) * 100)
-      const riskReward = Math.ceil((maxLoss/credit)*100)
+      const riskReward = parseInt((maxLoss/credit)*100)
 
       // Add the Iron Condor to the list of strategies
       ironCondors.push({
@@ -270,7 +270,7 @@ const constructshortCallSpreads = (options, optionSymbol, underlyingPrice, expir
       const expectancy = Math.floor((credit * (maxWinProb / 100)) - (maxLoss * (maxWinProb / 100)));
       const expectancyYield = Math.ceil((((expectancy / (underlyingPrice * 100)) / dte) * (252 / 12) * 100))
       const earlyProfit = Math.ceil((((target + (maxLoss * (maxLossProb / 100))) / (maxWinProb / 100)) / credit) * 100) > 100 ? 100 : Math.ceil((((target + (maxLoss * (maxLossProb / 100))) / (maxWinProb / 100)) / credit) * 100)
-      const riskReward = Math.ceil((maxLoss/credit)*100)
+      const riskReward = parseInt((maxLoss/credit)*100)
 
       shortCallSpreads.push({
         bid: Math.min(shortCall.bid,longCall.bid),
@@ -330,7 +330,7 @@ const constructshortPutSpreads = (options, optionSymbol, underlyingPrice, expira
       const expectancy = Math.floor((credit * (maxWinProb / 100)) - (maxLoss * (maxWinProb / 100)));
       const expectancyYield = Math.ceil((((expectancy / (underlyingPrice * 100)) / dte) * (252 / 12) * 100))
       const earlyProfit = Math.ceil((((target + (maxLoss * (maxLossProb / 100))) / (maxWinProb / 100)) / credit) * 100) > 100 ? 100 : Math.ceil((((target + (maxLoss * (maxLossProb / 100))) / (maxWinProb / 100)) / credit) * 100)
-      const riskReward = Math.ceil((maxLoss/credit)*100)
+      const riskReward = parseInt((maxLoss/credit)*100)
 
       shortPutSpreads.push({
         bid: Math.min(shortPut.bid,longPut.bid),
